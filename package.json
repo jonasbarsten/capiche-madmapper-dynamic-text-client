@@ -1,6 +1,6 @@
 {
   "name": "madmapper-subtitles",
-  "private": true,
+  "author": "Jonas Barsten <jonasbarsten@gmail.com>",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

@@ -9,14 +9,14 @@ type LineAddresses = {
 };
 
 type ScreenAddresses = {
-  doubleLine: LineAddresses;
+  [key: string]: LineAddresses;
 };
 
 export const settings = {
   screens: ["screen1", "screen2", "screen3", "screen4", "screen5"],
   addresses: {
     screen1: {
-      doubleLine: {
+      layer1: {
         text: "/medias/screen-1-double-line/Font/Text",
         visible: "/surfaces/Subtitles-1/Screen_1_double_line/visible",
         blendMode: "/surfaces/Subtitles-1/Screen_1_double_line/blend_mode",
@@ -27,7 +27,7 @@ export const settings = {
       },
     },
     screen2: {
-      doubleLine: {
+      layer1: {
         text: "/medias/screen-2-double-line/Font/Text",
         visible: "/surfaces/Subtitles-1/Screen_2_double_line/visible",
         blendMode: "/surfaces/Subtitles-1/Screen_2_double_line/blend_mode",
@@ -38,7 +38,7 @@ export const settings = {
       },
     },
     screen3: {
-      doubleLine: {
+      layer1: {
         text: "/medias/screen-3-double-line/Font/Text",
         visible: "/surfaces/Subtitles-1/Screen_3_double_line/visible",
         blendMode: "/surfaces/Subtitles-1/Screen_3_double_line/blend_mode",
@@ -49,7 +49,7 @@ export const settings = {
       },
     },
     screen4: {
-      doubleLine: {
+      layer1: {
         text: "/medias/screen-4-double-line/Font/Text",
         visible: "/surfaces/Subtitles-1/Screen_4_double_line/visible",
         blendMode: "/surfaces/Subtitles-1/Screen_4_double_line/blend_mode",
@@ -60,7 +60,7 @@ export const settings = {
       },
     },
     screen5: {
-      doubleLine: {
+      layer1: {
         text: "/medias/screen-5-double-line/Font/Text",
         visible: "/surfaces/Subtitles-1/Screen_5_double_line/visible",
         blendMode: "/surfaces/Subtitles-1/Screen_5_double_line/blend_mode",

@@ -106,7 +106,7 @@ function App() {
   }, [nextPreset, prevPreset]);
 
   const sendTextMessage = (screenName: string, textValue: string) => {
-    const address = settings.addresses[screenName].doubleLine.text;
+    const address = settings.addresses[screenName].layer1.text;
     const oscMessage: OscMessage = {
       address,
       args: [{ value: textValue, type: "s" }],
@@ -117,7 +117,7 @@ function App() {
         JSON.stringify({
           cmd: "osc",
           data: {
-            address: settings.addresses[screenName].doubleLine.visible,
+            address: settings.addresses[screenName].layer1.visible,
             args: [{ value: "false", type: "s" }],
           },
         })
@@ -127,7 +127,7 @@ function App() {
         JSON.stringify({
           cmd: "osc",
           data: {
-            address: settings.addresses[screenName].doubleLine.visible,
+            address: settings.addresses[screenName].layer1.visible,
             args: [{ value: "true", type: "s" }],
           },
         })
@@ -140,7 +140,7 @@ function App() {
       JSON.stringify({
         cmd: "osc",
         data: {
-          address: settings.addresses[screenName].doubleLine.blendMode,
+          address: settings.addresses[screenName].layer1.blendMode,
           args: [{ value: blend, type: "s" }],
         },
       })
@@ -152,7 +152,7 @@ function App() {
       JSON.stringify({
         cmd: "osc",
         data: {
-          address: settings.addresses[screenName].doubleLine.oscillator,
+          address: settings.addresses[screenName].layer1.oscillator,
           args: [{ value: flash ? "true" : "false", type: "s" }],
         },
       })
@@ -162,7 +162,7 @@ function App() {
       JSON.stringify({
         cmd: "osc",
         data: {
-          address: settings.addresses[screenName].doubleLine.opacity,
+          address: settings.addresses[screenName].layer1.opacity,
           args: [{ value: 100, type: "i" }],
         },
       })
@@ -180,7 +180,7 @@ function App() {
       JSON.stringify({
         cmd: "osc",
         data: {
-          address: settings.addresses[screenName].doubleLine.font,
+          address: settings.addresses[screenName].layer1.font,
           args: [{ value: fontMap[font], type: "s" }],
         },
       })
@@ -193,7 +193,7 @@ function App() {
       JSON.stringify({
         cmd: "osc",
         data: {
-          address: settings.addresses[screenName].doubleLine.fontSize,
+          address: settings.addresses[screenName].layer1.fontSize,
           args: [{ value: fontSize, type: "i" }],
         },
       })
@@ -241,7 +241,7 @@ function App() {
         JSON.stringify({
           cmd: "osc",
           data: {
-            address: settings.addresses[otherScreen].doubleLine.visible,
+            address: settings.addresses[otherScreen].layer1.visible,
             args: [{ value: "false", type: "s" }],
           },
         })
@@ -288,7 +288,7 @@ function App() {
         JSON.stringify({
           cmd: "osc",
           data: {
-            address: settings.addresses[screenName].doubleLine.visible,
+            address: settings.addresses[screenName].layer1.visible,
             args: [{ value: "false", type: "s" }],
           },
         })
