@@ -56,6 +56,13 @@ export const SortablePresetItem = ({
     });
   };
 
+  const handleTogglePresetLayer = (layerName: string) => {
+    handleUpdatePreset({
+      ...preset,
+      layer: layerName as Preset["layer"],
+    });
+  };
+
   return (
     <tr
       ref={setNodeRef}
@@ -106,6 +113,25 @@ export const SortablePresetItem = ({
         </p>
       </td>
       <td>
+        <p>
+          {settings.layers.map((layerName, i) => {
+            let badeColor = "badge-ghost";
+            if (preset.layer === layerName) {
+              badeColor = "badge-primary";
+            }
+            return (
+              <span
+                key={i}
+                className={`badge ${badeColor} m-1`}
+                onClick={() => handleTogglePresetLayer(layerName)}
+              >
+                {layerName}
+              </span>
+            );
+          })}
+        </p>
+      </td>
+      <td>
         <span className="flex items-center justify-end">
           <span className="label-text">Transparent</span>
           <input
@@ -125,6 +151,17 @@ export const SortablePresetItem = ({
             className="checkbox checkbox-xs"
             onChange={(e) =>
               handleUpdatePreset({ ...preset, flash: e.target.checked })
+            }
+          />
+        </span>
+        <span className="flex items-center justify-end">
+          Choke layer
+          <input
+            type="checkbox"
+            checked={!!preset.chokeLayer}
+            className="checkbox checkbox-xs"
+            onChange={(e) =>
+              handleUpdatePreset({ ...preset, chokeLayer: e.target.checked })
             }
           />
         </span>

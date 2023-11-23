@@ -1,85 +1,173 @@
-type LineAddresses = {
-  text: string;
-  visible: string;
-  blendMode: string;
-  oscillator: string;
-  opacity: string;
-  font: string;
-  fontSize: string;
+// type LineAddresses = {
+//   text: string;
+//   visible: string;
+//   blendMode: string;
+//   oscillator: string;
+//   opacity: string;
+//   font: string;
+//   fontSize: string;
+// };
+
+// type ScreenAddresses = {
+//   [key: string]: LineAddresses;
+// };
+
+export type AddressStrings = {
+  visible: `/surfaces/${string}/${string}/visible`;
+  blendMode: `/surfaces/${string}/${string}/blend_mode`;
+  opacity: `/surfaces/${string}/${string}/opacity`;
+  // MEDIA
+  text: `/medias/${string}/Font/Text`;
+  font: `/medias/${string}/Font/Font`;
+  fontSize: `/medias/${string}/Font/Font_Size`;
+  // FX
+  oscillator: `/modules/${string}/active`;
 };
 
-type ScreenAddresses = {
-  [key: string]: LineAddresses;
+const addressStringsMap: AddressStrings = {
+  // QUAD
+  visible: "/surfaces/{{GROUP_NAME}}/{{QUAD_NAME}}/visible",
+  blendMode: "/surfaces/{{GROUP_NAME}}/{{QUAD_NAME}}/blend_mode",
+  opacity: "/surfaces/{{GROUP_NAME}}/{{QUAD_NAME}}/opacity",
+  // MEDIA
+  text: "/medias/{{MEDIA_NAME}}/Font/Text",
+  font: "/medias/{{MEDIA_NAME}}/Font/Font",
+  fontSize: "/medias/{{MEDIA_NAME}}/Font/Font_Size",
+  // FX
+  oscillator: "/modules/{{OSCILLATOR_NAME}}/active",
 };
+
+export type TextLayer = {
+  groupName: string;
+  quadName: string;
+  mediaName: string;
+  oscillatorName: string;
+};
+
+export const getLayerAddresses = (textLayer: TextLayer): AddressStrings => {
+  const layerAddressStrings: Record<string, string> = {};
+
+  for (const [addressKey, value] of Object.entries(addressStringsMap)) {
+    const newValue = value
+      .replace("{{GROUP_NAME}}", textLayer.groupName)
+      .replace("{{QUAD_NAME}}", textLayer.quadName)
+      .replace("{{MEDIA_NAME}}", textLayer.mediaName)
+      .replace("{{OSCILLATOR_NAME}}", textLayer.oscillatorName);
+    layerAddressStrings[addressKey] = newValue;
+  }
+
+  return layerAddressStrings as AddressStrings;
+};
+
+const subsGroupName = "Subtitles-1";
+
+export const layers = {
+  screen1: {
+    layer1: {
+      groupName: subsGroupName,
+      quadName: "Screen_1_layer_1",
+      mediaName: "Screen_1_layer_1",
+      oscillatorName: "Oscillator_subs_screen_1",
+    },
+    layer2: {
+      groupName: subsGroupName,
+      quadName: "Screen_1_layer_2",
+      mediaName: "Screen_1_layer_2",
+      oscillatorName: "Oscillator_subs_screen_1",
+    },
+    layer3: {
+      groupName: subsGroupName,
+      quadName: "Screen_1_layer_3",
+      mediaName: "Screen_1_layer_3",
+      oscillatorName: "Oscillator_subs_screen_1",
+    },
+  },
+  screen2: {
+    layer1: {
+      groupName: subsGroupName,
+      quadName: "Screen_2_layer_1",
+      mediaName: "Screen_2_layer_1",
+      oscillatorName: "Oscillator_subs_screen_2",
+    },
+    layer2: {
+      groupName: subsGroupName,
+      quadName: "Screen_2_layer_2",
+      mediaName: "Screen_2_layer_2",
+      oscillatorName: "Oscillator_subs_screen_2",
+    },
+    layer3: {
+      groupName: subsGroupName,
+      quadName: "Screen_2_layer_3",
+      mediaName: "Screen_2_layer_3",
+      oscillatorName: "Oscillator_subs_screen_2",
+    },
+  },
+  screen3: {
+    layer1: {
+      groupName: subsGroupName,
+      quadName: "Screen_3_layer_1",
+      mediaName: "Screen_3_layer_1",
+      oscillatorName: "Oscillator_subs_screen_3",
+    },
+    layer2: {
+      groupName: subsGroupName,
+      quadName: "Screen_3_layer_2",
+      mediaName: "Screen_3_layer_2",
+      oscillatorName: "Oscillator_subs_screen_3",
+    },
+    layer3: {
+      groupName: subsGroupName,
+      quadName: "Screen_3_layer_3",
+      mediaName: "Screen_3_layer_3",
+      oscillatorName: "Oscillator_subs_screen_3",
+    },
+  },
+  screen4: {
+    layer1: {
+      groupName: subsGroupName,
+      quadName: "Screen_4_layer_1",
+      mediaName: "Screen_4_layer_1",
+      oscillatorName: "Oscillator_subs_screen_4",
+    },
+    layer2: {
+      groupName: subsGroupName,
+      quadName: "Screen_4_layer_2",
+      mediaName: "Screen_4_layer_2",
+      oscillatorName: "Oscillator_subs_screen_4",
+    },
+    layer3: {
+      groupName: subsGroupName,
+      quadName: "Screen_4_layer_3",
+      mediaName: "Screen_4_layer_3",
+      oscillatorName: "Oscillator_subs_screen_4",
+    },
+  },
+  screen5: {
+    layer1: {
+      groupName: subsGroupName,
+      quadName: "Screen_5_layer_1",
+      mediaName: "Screen_5_layer_1",
+      oscillatorName: "Oscillator_subs_screen_5",
+    },
+    layer2: {
+      groupName: subsGroupName,
+      quadName: "Screen_5_layer_2",
+      mediaName: "Screen_5_layer_2",
+      oscillatorName: "Oscillator_subs_screen_5",
+    },
+    layer3: {
+      groupName: subsGroupName,
+      quadName: "Screen_5_layer_3",
+      mediaName: "Screen_5_layer_3",
+      oscillatorName: "Oscillator_subs_screen_5",
+    },
+  },
+} as { [key: string]: { [key: string]: TextLayer } };
 
 export const settings = {
   screens: ["screen1", "screen2", "screen3", "screen4", "screen5"],
-  addresses: {
-    screen1: {
-      layer1: {
-        text: "/medias/screen-1-double-line/Font/Text",
-        visible: "/surfaces/Subtitles-1/Screen_1_double_line/visible",
-        blendMode: "/surfaces/Subtitles-1/Screen_1_double_line/blend_mode",
-        oscillator: "/modules/Oscillator_subs_screen_1/active",
-        opacity: "/surfaces/Subtitles-1/Screen_1_double_line/opacity",
-        font: "/medias/screen-1-double-line/Font/Font",
-        fontSize: "/medias/screen-1-double-line/Font/Font_Size",
-      },
-    },
-    screen2: {
-      layer1: {
-        text: "/medias/screen-2-double-line/Font/Text",
-        visible: "/surfaces/Subtitles-1/Screen_2_double_line/visible",
-        blendMode: "/surfaces/Subtitles-1/Screen_2_double_line/blend_mode",
-        oscillator: "/modules/Oscillator_subs_screen_2/active",
-        opacity: "/surfaces/Subtitles-1/Screen_2_double_line/opacity",
-        font: "/medias/screen-2-double-line/Font/Font",
-        fontSize: "/medias/screen-2-double-line/Font/Font_Size",
-      },
-    },
-    screen3: {
-      layer1: {
-        text: "/medias/screen-3-double-line/Font/Text",
-        visible: "/surfaces/Subtitles-1/Screen_3_double_line/visible",
-        blendMode: "/surfaces/Subtitles-1/Screen_3_double_line/blend_mode",
-        oscillator: "/modules/Oscillator_subs_screen_3/active",
-        opacity: "/surfaces/Subtitles-1/Screen_3_double_line/opacity",
-        font: "/medias/screen-3-double-line/Font/Font",
-        fontSize: "/medias/screen-3-double-line/Font/Font_Size",
-      },
-    },
-    screen4: {
-      layer1: {
-        text: "/medias/screen-4-double-line/Font/Text",
-        visible: "/surfaces/Subtitles-1/Screen_4_double_line/visible",
-        blendMode: "/surfaces/Subtitles-1/Screen_4_double_line/blend_mode",
-        oscillator: "/modules/Oscillator_subs_screen_4/active",
-        opacity: "/surfaces/Subtitles-1/Screen_4_double_line/opacity",
-        font: "/medias/screen-4-double-line/Font/Font",
-        fontSize: "/medias/screen-4-double-line/Font/Font_Size",
-      },
-    },
-    screen5: {
-      layer1: {
-        text: "/medias/screen-5-double-line/Font/Text",
-        visible: "/surfaces/Subtitles-1/Screen_5_double_line/visible",
-        blendMode: "/surfaces/Subtitles-1/Screen_5_double_line/blend_mode",
-        oscillator: "/modules/Oscillator_subs_screen_5/active",
-        opacity: "/surfaces/Subtitles-1/Screen_5_double_line/opacity",
-        font: "/medias/screen-5-double-line/Font/Font",
-        fontSize: "/medias/screen-5-double-line/Font/Font_Size",
-      },
-    },
-  },
+  layers: ["layer1", "layer2", "layer3"],
 } as {
-  addresses: { [key: string]: ScreenAddresses };
   screens: string[];
+  layers: string[];
 };
-
-// as {
-//   [key: string]:
-//     | {
-//         [key: string]: ScreenAddresses;
-//       }
-//     | string[];
-// };

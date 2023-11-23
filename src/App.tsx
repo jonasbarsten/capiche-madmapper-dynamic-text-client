@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import useWebSocket from "react-use-websocket";
-import { settings } from "./settings";
+import { TextLayer, settings } from "./settings";
+import { layers, getLayerAddresses } from "./settings";
 
 import { ScreenList } from "./ScreenList";
 import { v4 as uuidv4 } from "uuid";
@@ -32,6 +33,8 @@ export type Preset = {
   flash?: boolean;
   font?: "texting" | "hal" | "corporate";
   fontSize?: number;
+  layer: `layer${number}`;
+  chokeLayer?: boolean; // Will hide all other visuals on same layer when played
 };
 
 type OscColor = {
@@ -76,7 +79,8 @@ function App() {
 
   useEffect(() => {
     for (const screenName of selectedScreens) {
-      sendTextMessage(screenName, text);
+      const textLayer = layers[screenName]["layer1"];
+      sendTextMessage(textLayer, text);
     }
   }, [text, selectedScreens]);
 
@@ -105,8 +109,11 @@ function App() {
     };
   }, [nextPreset, prevPreset]);
 
-  const sendTextMessage = (screenName: string, textValue: string) => {
-    const address = settings.addresses[screenName].layer1.text;
+  const sendTextMessage = (textLayer: TextLayer, textValue: string) => {
+    const { text: textAddress, visible: visibleAddress } =
+      getLayerAddresses(textLayer);
+
+    const address = textAddress;
     const oscMessage: OscMessage = {
       address,
       args: [{ value: textValue, type: "s" }],
@@ -117,7 +124,7 @@ function App() {
         JSON.stringify({
           cmd: "osc",
           data: {
-            address: settings.addresses[screenName].layer1.visible,
+            address: visibleAddress,
             args: [{ value: "false", type: "s" }],
           },
         })
@@ -127,7 +134,7 @@ function App() {
         JSON.stringify({
           cmd: "osc",
           data: {
-            address: settings.addresses[screenName].layer1.visible,
+            address: visibleAddress,
             args: [{ value: "true", type: "s" }],
           },
         })
@@ -135,24 +142,27 @@ function App() {
     }
   };
 
-  const sendBlendMode = (screenName: string, blend: "Over" | "Add") => {
+  const sendBlendMode = (textLayer: TextLayer, blend: "Over" | "Add") => {
+    const { blendMode: blendModeAddress } = getLayerAddresses(textLayer);
     sendMessage(
       JSON.stringify({
         cmd: "osc",
         data: {
-          address: settings.addresses[screenName].layer1.blendMode,
+          address: blendModeAddress,
           args: [{ value: blend, type: "s" }],
         },
       })
     );
   };
 
-  const sendFlash = (screenName: string, flash: boolean) => {
+  const sendFlash = (textLayer: TextLayer, flash: boolean) => {
+    const { oscillator: oscillatorAddress, opacity: opacityAddress } =
+      getLayerAddresses(textLayer);
     sendMessage(
       JSON.stringify({
         cmd: "osc",
         data: {
-          address: settings.addresses[screenName].layer1.oscillator,
+          address: oscillatorAddress,
           args: [{ value: flash ? "true" : "false", type: "s" }],
         },
       })
@@ -162,14 +172,15 @@ function App() {
       JSON.stringify({
         cmd: "osc",
         data: {
-          address: settings.addresses[screenName].layer1.opacity,
+          address: opacityAddress,
           args: [{ value: 100, type: "i" }],
         },
       })
     );
   };
 
-  const sendFont = (screenName: string, font: Preset["font"]) => {
+  const sendFont = (textLayer: TextLayer, font: Preset["font"]) => {
+    const { font: fontAddress } = getLayerAddresses(textLayer);
     if (!font) return;
     const fontMap = {
       texting: "Arial",
@@ -180,20 +191,21 @@ function App() {
       JSON.stringify({
         cmd: "osc",
         data: {
-          address: settings.addresses[screenName].layer1.font,
+          address: fontAddress,
           args: [{ value: fontMap[font], type: "s" }],
         },
       })
     );
   };
 
-  const sendFontSize = (screenName: string, fontSize?: number) => {
+  const sendFontSize = (textLayer: TextLayer, fontSize?: number) => {
+    const { fontSize: fontSizeAddress } = getLayerAddresses(textLayer);
     if (!fontSize) return;
     sendMessage(
       JSON.stringify({
         cmd: "osc",
         data: {
-          address: settings.addresses[screenName].layer1.fontSize,
+          address: fontSizeAddress,
           args: [{ value: fontSize, type: "i" }],
         },
       })
@@ -215,6 +227,7 @@ function App() {
       id: uuidv4(),
       text,
       screens: selectedScreens,
+      layer: "layer1",
     };
     setPresetsBuffer((prevState) => [...prevState, newPreset]);
     sendMessage(
@@ -230,22 +243,27 @@ function App() {
       (otherScreenName) => !preset.screens.includes(otherScreenName)
     );
     for (const screenName of preset.screens) {
-      sendTextMessage(screenName, preset.text);
-      sendBlendMode(screenName, preset.transparentBg ? "Add" : "Over");
-      sendFlash(screenName, !!preset.flash);
-      sendFont(screenName, preset.font);
-      sendFontSize(screenName, preset.fontSize);
+      const textLayer = layers[screenName][preset.layer];
+      sendTextMessage(textLayer, preset.text);
+      sendBlendMode(textLayer, preset.transparentBg ? "Add" : "Over");
+      sendFlash(textLayer, !!preset.flash);
+      sendFont(textLayer, preset.font);
+      sendFontSize(textLayer, preset.fontSize);
     }
-    for (const otherScreen of otherScreens) {
-      sendMessage(
-        JSON.stringify({
-          cmd: "osc",
-          data: {
-            address: settings.addresses[otherScreen].layer1.visible,
-            args: [{ value: "false", type: "s" }],
-          },
-        })
-      );
+    if (preset.chokeLayer) {
+      for (const otherScreen of otherScreens) {
+        const textLayer = layers[otherScreen][preset.layer];
+        const { visible: visibleAddress } = getLayerAddresses(textLayer);
+        sendMessage(
+          JSON.stringify({
+            cmd: "osc",
+            data: {
+              address: visibleAddress,
+              args: [{ value: "false", type: "s" }],
+            },
+          })
+        );
+      }
     }
   };
 
@@ -284,15 +302,19 @@ function App() {
 
   const handleClearAll = () => {
     for (const screenName of screens) {
-      sendMessage(
-        JSON.stringify({
-          cmd: "osc",
-          data: {
-            address: settings.addresses[screenName].layer1.visible,
-            args: [{ value: "false", type: "s" }],
-          },
-        })
-      );
+      for (const layerName of settings.layers) {
+        const textLayer = layers[screenName][layerName];
+        const { visible: visibleAddress } = getLayerAddresses(textLayer);
+        sendMessage(
+          JSON.stringify({
+            cmd: "osc",
+            data: {
+              address: visibleAddress,
+              args: [{ value: "false", type: "s" }],
+            },
+          })
+        );
+      }
     }
   };
 
@@ -335,6 +357,7 @@ function App() {
                   <th></th>
                   <th>Text</th>
                   <th>Screens</th>
+                  <th>Layers</th>
                   <th>Function</th>
                   <th>Font</th>
                   <th>Size</th>
