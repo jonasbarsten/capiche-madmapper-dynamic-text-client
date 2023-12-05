@@ -340,7 +340,7 @@ function App() {
 
   return (
     <div>
-      <div className="fixed bottom-4 right-4 bg-gray-500 p-6 z-10 rounded-md">
+      <div className="fixed bottom-32 right-4 bg-gray-500 p-6 z-10 rounded-md">
         <ActionsPanel
           prevPreset={prevPreset}
           nextPreset={nextPreset}
@@ -390,30 +390,6 @@ function App() {
           </div>
         </SortableContext>
       </DndContext>
-      {/* <div className="flex space-x-1">
-        <button className="btn" onClick={prevPreset}>
-          Prev
-        </button>
-        <button className="btn" onClick={nextPreset}>
-          Next
-        </button>
-      </div>
-      <div className="flex flex-col mb-10 space-y-1">
-        <button className="btn" onClick={handleClearAll}>
-          Clear all
-        </button>
-      </div>
-      <textarea
-        className="textarea textarea-primary"
-        onChange={(e) => setText(e.target.value)}
-      />
-      <ScreenList
-        selectedScreens={selectedScreens}
-        handleSelectScreen={handleSelectScreen}
-      />
-      <button className="btn mt-6" onClick={handleSavePreset}>
-        Save as preset
-      </button> */}
     </div>
   );
 }
