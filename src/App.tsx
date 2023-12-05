@@ -3,8 +3,6 @@ import "./App.css";
 import useWebSocket from "react-use-websocket";
 import { TextLayer, settings } from "./settings";
 import { layers, getLayerAddresses } from "./settings";
-
-import { ScreenList } from "./ScreenList";
 import { v4 as uuidv4 } from "uuid";
 import {
   DndContext,
@@ -22,6 +20,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { SortablePresetItem } from "./SortablePresetItem";
+import { ActionsPanel } from "./ActionsPanel";
 
 const screens = settings.screens;
 
@@ -341,6 +340,18 @@ function App() {
 
   return (
     <div>
+      <div className="fixed bottom-4 right-4 bg-gray-500 p-6 z-10 rounded-md">
+        <ActionsPanel
+          prevPreset={prevPreset}
+          nextPreset={nextPreset}
+          handleClearAll={handleClearAll}
+          setText={setText}
+          selectedScreens={selectedScreens}
+          handleSelectScreen={handleSelectScreen}
+          handleSavePreset={handleSavePreset}
+        />
+      </div>
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -379,7 +390,7 @@ function App() {
           </div>
         </SortableContext>
       </DndContext>
-      <div className="flex space-x-1">
+      {/* <div className="flex space-x-1">
         <button className="btn" onClick={prevPreset}>
           Prev
         </button>
@@ -402,7 +413,7 @@ function App() {
       />
       <button className="btn mt-6" onClick={handleSavePreset}>
         Save as preset
-      </button>
+      </button> */}
     </div>
   );
 }
