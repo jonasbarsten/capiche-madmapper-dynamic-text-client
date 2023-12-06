@@ -71,6 +71,29 @@ function App() {
     })
   );
 
+  const handleWsAction = (action: string) => {
+    switch (action) {
+      case "firstPreset": {
+        if (presetsBuffer.length > 0) {
+          setSelectedPreset(presetsBuffer[0]);
+        }
+        break;
+      }
+      case "nextPreset": {
+        nextPreset();
+        break;
+      }
+      case "prevPreset": {
+        prevPreset();
+        break;
+      }
+      case "clearAll": {
+        handleClearAll();
+        break;
+      }
+    }
+  };
+
   useEffect(() => {
     if (!selectedPreset) return;
     handlePlayPreset(selectedPreset);
@@ -85,8 +108,14 @@ function App() {
 
   useEffect(() => {
     if (!lastMessage) return;
-    const savedPresets = JSON.parse(lastMessage.data);
-    setPresetsBuffer(savedPresets);
+    const data = JSON.parse(lastMessage.data);
+    if (data.presets) {
+      const savedPresets = JSON.parse(data.presets);
+      setPresetsBuffer(savedPresets);
+    }
+    if (data.action) {
+      handleWsAction(data.action);
+    }
   }, [lastMessage]);
 
   const nextPreset = () => {
