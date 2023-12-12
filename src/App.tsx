@@ -71,98 +71,87 @@ function App() {
     })
   );
 
-  const handleWsAction = (action: string) => {
-    switch (action) {
-      case "firstPreset": {
-        if (presetsBuffer.length > 0) {
-          setSelectedPreset(presetsBuffer[0]);
-        }
-        break;
-      }
-      case "nextPreset": {
-        nextPreset();
-        break;
-      }
-      case "prevPreset": {
-        prevPreset();
-        break;
-      }
-      case "clearAll": {
-        handleClearAll();
-        break;
-      }
-    }
-  };
+  const sendBlendMode = useCallback(
+    (textLayer: TextLayer, blend: "Over" | "Add") => {
+      const { blendMode: blendModeAddress } = getLayerAddresses(textLayer);
+      sendMessage(
+        JSON.stringify({
+          cmd: "osc",
+          data: {
+            address: blendModeAddress,
+            args: [{ value: blend, type: "s" }],
+          },
+        })
+      );
+    },
+    [sendMessage]
+  );
 
-  const sendBlendMode = (textLayer: TextLayer, blend: "Over" | "Add") => {
-    const { blendMode: blendModeAddress } = getLayerAddresses(textLayer);
-    sendMessage(
-      JSON.stringify({
-        cmd: "osc",
-        data: {
-          address: blendModeAddress,
-          args: [{ value: blend, type: "s" }],
-        },
-      })
-    );
-  };
+  const sendFlash = useCallback(
+    (textLayer: TextLayer, flash: boolean) => {
+      const { oscillator: oscillatorAddress, opacity: opacityAddress } =
+        getLayerAddresses(textLayer);
+      sendMessage(
+        JSON.stringify({
+          cmd: "osc",
+          data: {
+            address: oscillatorAddress,
+            args: [{ value: flash ? "true" : "false", type: "s" }],
+          },
+        })
+      );
+      // Set opacity to max
+      sendMessage(
+        JSON.stringify({
+          cmd: "osc",
+          data: {
+            address: opacityAddress,
+            args: [{ value: 100, type: "i" }],
+          },
+        })
+      );
+    },
+    [sendMessage]
+  );
 
-  const sendFlash = (textLayer: TextLayer, flash: boolean) => {
-    const { oscillator: oscillatorAddress, opacity: opacityAddress } =
-      getLayerAddresses(textLayer);
-    sendMessage(
-      JSON.stringify({
-        cmd: "osc",
-        data: {
-          address: oscillatorAddress,
-          args: [{ value: flash ? "true" : "false", type: "s" }],
-        },
-      })
-    );
-    // Set opacity to max
-    sendMessage(
-      JSON.stringify({
-        cmd: "osc",
-        data: {
-          address: opacityAddress,
-          args: [{ value: 100, type: "i" }],
-        },
-      })
-    );
-  };
+  const sendFont = useCallback(
+    (textLayer: TextLayer, font: Preset["font"]) => {
+      const { font: fontAddress } = getLayerAddresses(textLayer);
+      if (!font) return;
+      const fontMap = {
+        texting: "Arial",
+        hal: "Arcade",
+        corporate: "Times New Roman",
+      };
+      sendMessage(
+        JSON.stringify({
+          cmd: "osc",
+          data: {
+            address: fontAddress,
+            args: [{ value: fontMap[font], type: "s" }],
+          },
+        })
+      );
+    },
+    [sendMessage]
+  );
 
-  const sendFont = (textLayer: TextLayer, font: Preset["font"]) => {
-    const { font: fontAddress } = getLayerAddresses(textLayer);
-    if (!font) return;
-    const fontMap = {
-      texting: "Arial",
-      hal: "Arcade",
-      corporate: "Times New Roman",
-    };
-    sendMessage(
-      JSON.stringify({
-        cmd: "osc",
-        data: {
-          address: fontAddress,
-          args: [{ value: fontMap[font], type: "s" }],
-        },
-      })
-    );
-  };
-
-  const sendFontSize = (textLayer: TextLayer, fontSize?: number) => {
-    const { fontSize: fontSizeAddress } = getLayerAddresses(textLayer);
-    if (!fontSize) return;
-    sendMessage(
-      JSON.stringify({
-        cmd: "osc",
-        data: {
-          address: fontSizeAddress,
-          args: [{ value: fontSize, type: "i" }],
-        },
-      })
-    );
-  };
+  const sendFontSize = useCallback(
+    (textLayer: TextLayer, fontSize?: number) => {
+      const { fontSize: fontSizeAddress } = getLayerAddresses(textLayer);
+      if (!fontSize) return;
+      sendMessage(
+        JSON.stringify({
+          cmd: "osc",
+          data: {
+            address: fontSizeAddress,
+            args: [{ value: fontSize, type: "i" }],
+          },
+        })
+      );
+    },
+    [sendMessage]
+  );
 
   const sendTextMessage = useCallback(
     (textLayer: TextLayer, textValue: string) => {
@@ -251,19 +240,7 @@ function App() {
       const textLayer = layers[screenName]["layer1"];
       sendTextMessage(textLayer, text);
     }
-  }, [text, selectedScreens]);
-
-  useEffect(() => {
-    if (!lastMessage) return;
-    const data = JSON.parse(lastMessage.data);
-    if (data.presets) {
-      const savedPresets = JSON.parse(data.presets);
-      setPresetsBuffer(savedPresets);
-    }
-    if (data.action) {
-      handleWsAction(data.action);
-    }
-  }, [lastMessage]);
+  }, [text, selectedScreens, sendTextMessage]);
 
   const nextPreset = useCallback(() => {
     setSelectedPreset(presetsBuffer[selectedPresetIndex + 1]);
@@ -343,7 +320,7 @@ function App() {
     );
   };
 
-  const handleClearAll = () => {
+  const handleClearAll = useCallback(() => {
     for (const screenName of screens) {
       for (const layerName of settings.layers) {
         const textLayer = layers[screenName][layerName];
@@ -359,7 +336,45 @@ function App() {
         );
       }
     }
-  };
+  }, [sendMessage]);
+
+  const handleWsAction = useCallback(
+    (action: string) => {
+      switch (action) {
+        case "firstPreset": {
+          if (presetsBuffer.length > 0) {
+            setSelectedPreset(presetsBuffer[0]);
+          }
+          break;
+        }
+        case "nextPreset": {
+          nextPreset();
+          break;
+        }
+        case "prevPreset": {
+          prevPreset();
+          break;
+        }
+        case "clearAll": {
+          handleClearAll();
+          break;
+        }
+      }
+    },
+    [handleClearAll, nextPreset, presetsBuffer, prevPreset]
+  );
+
+  useEffect(() => {
+    if (!lastMessage) return;
+    const data = JSON.parse(lastMessage.data);
+    if (data.presets) {
+      const savedPresets = JSON.parse(data.presets);
+      setPresetsBuffer(savedPresets);
+    }
+    if (data.action) {
+      handleWsAction(data.action);
+    }
+  }, [handleWsAction, lastMessage]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
