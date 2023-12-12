@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import useWebSocket from "react-use-websocket";
 import { TextLayer, settings } from "./settings";
@@ -71,184 +71,62 @@ function App() {
     })
   );
 
-  const sendBlendMode = useCallback(
-    (textLayer: TextLayer, blend: "Over" | "Add") => {
-      const { blendMode: blendModeAddress } = getLayerAddresses(textLayer);
-      sendMessage(
-        JSON.stringify({
-          cmd: "osc",
-          data: {
-            address: blendModeAddress,
-            args: [{ value: blend, type: "s" }],
-          },
-        })
-      );
-    },
-    [sendMessage]
-  );
-
-  const sendFlash = useCallback(
-    (textLayer: TextLayer, flash: boolean) => {
-      const { oscillator: oscillatorAddress, opacity: opacityAddress } =
-        getLayerAddresses(textLayer);
-      sendMessage(
-        JSON.stringify({
-          cmd: "osc",
-          data: {
-            address: oscillatorAddress,
-            args: [{ value: flash ? "true" : "false", type: "s" }],
-          },
-        })
-      );
-      // Set opacity to max
-      sendMessage(
-        JSON.stringify({
-          cmd: "osc",
-          data: {
-            address: opacityAddress,
-            args: [{ value: 100, type: "i" }],
-          },
-        })
-      );
-    },
-    [sendMessage]
-  );
-
-  const sendFont = useCallback(
-    (textLayer: TextLayer, font: Preset["font"]) => {
-      const { font: fontAddress } = getLayerAddresses(textLayer);
-      if (!font) return;
-      const fontMap = {
-        texting: "Arial",
-        hal: "Arcade",
-        corporate: "Times New Roman",
-      };
-      sendMessage(
-        JSON.stringify({
-          cmd: "osc",
-          data: {
-            address: fontAddress,
-            args: [{ value: fontMap[font], type: "s" }],
-          },
-        })
-      );
-    },
-    [sendMessage]
-  );
-
-  const sendFontSize = useCallback(
-    (textLayer: TextLayer, fontSize?: number) => {
-      const { fontSize: fontSizeAddress } = getLayerAddresses(textLayer);
-      if (!fontSize) return;
-      sendMessage(
-        JSON.stringify({
-          cmd: "osc",
-          data: {
-            address: fontSizeAddress,
-            args: [{ value: fontSize, type: "i" }],
-          },
-        })
-      );
-    },
-    [sendMessage]
-  );
-
-  const sendTextMessage = useCallback(
-    (textLayer: TextLayer, textValue: string) => {
-      const { text: textAddress, visible: visibleAddress } =
-        getLayerAddresses(textLayer);
-
-      const address = textAddress;
-      const oscMessage: OscMessage = {
-        address,
-        args: [{ value: textValue, type: "s" }],
-      };
-      sendMessage(JSON.stringify({ data: oscMessage, cmd: "osc" }));
-      if (textValue.length < 1) {
-        sendMessage(
-          JSON.stringify({
-            cmd: "osc",
-            data: {
-              address: visibleAddress,
-              args: [{ value: "false", type: "s" }],
-            },
-          })
-        );
-      } else {
-        sendMessage(
-          JSON.stringify({
-            cmd: "osc",
-            data: {
-              address: visibleAddress,
-              args: [{ value: "true", type: "s" }],
-            },
-          })
-        );
-      }
-    },
-    [sendMessage]
-  );
-
-  const handlePlayPreset = useCallback(
-    (preset: Preset) => {
-      const otherScreens = screens.filter(
-        (otherScreenName) => !preset.screens.includes(otherScreenName)
-      );
-      for (const screenName of preset.screens) {
-        const textLayer = layers[screenName][preset.layer];
-        sendTextMessage(textLayer, preset.text);
-        sendBlendMode(textLayer, preset.transparentBg ? "Add" : "Over");
-        sendFlash(textLayer, !!preset.flash);
-        sendFont(textLayer, preset.font);
-        sendFontSize(textLayer, preset.fontSize);
-      }
-      if (preset.chokeLayer) {
-        for (const otherScreen of otherScreens) {
-          const textLayer = layers[otherScreen][preset.layer];
-          const { visible: visibleAddress } = getLayerAddresses(textLayer);
-          sendMessage(
-            JSON.stringify({
-              cmd: "osc",
-              data: {
-                address: visibleAddress,
-                args: [{ value: "false", type: "s" }],
-              },
-            })
-          );
+  const handleWsAction = (action: string) => {
+    switch (action) {
+      case "firstPreset": {
+        if (presetsBuffer.length > 0) {
+          setSelectedPreset(presetsBuffer[0]);
         }
+        break;
       }
-    },
-    [
-      sendBlendMode,
-      sendFlash,
-      sendFont,
-      sendFontSize,
-      sendMessage,
-      sendTextMessage,
-    ]
-  );
+      case "nextPreset": {
+        nextPreset();
+        break;
+      }
+      case "prevPreset": {
+        prevPreset();
+        break;
+      }
+      case "clearAll": {
+        handleClearAll();
+        break;
+      }
+    }
+  };
 
   useEffect(() => {
     if (!selectedPreset) return;
     handlePlayPreset(selectedPreset);
     const presetElem = document.getElementById(`preset-${selectedPreset.id}`);
-    presetElem?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [handlePlayPreset, selectedPreset]);
+    presetElem?.scrollIntoView({ behavior: "instant", block: "center" });
+  }, [selectedPreset]);
 
   useEffect(() => {
     for (const screenName of selectedScreens) {
       const textLayer = layers[screenName]["layer1"];
       sendTextMessage(textLayer, text);
     }
-  }, [text, selectedScreens, sendTextMessage]);
+  }, [text, selectedScreens]);
 
-  const nextPreset = useCallback(() => {
+  useEffect(() => {
+    if (!lastMessage) return;
+    const data = JSON.parse(lastMessage.data);
+    if (data.presets) {
+      const savedPresets = JSON.parse(data.presets);
+      setPresetsBuffer(savedPresets);
+    }
+    if (data.action) {
+      handleWsAction(data.action);
+    }
+  }, [lastMessage]);
+
+  const nextPreset = () => {
     setSelectedPreset(presetsBuffer[selectedPresetIndex + 1]);
-  }, [presetsBuffer, selectedPresetIndex]);
+  };
 
-  const prevPreset = useCallback(() => {
+  const prevPreset = () => {
     setSelectedPreset(presetsBuffer[selectedPresetIndex - 1]);
-  }, [presetsBuffer, selectedPresetIndex]);
+  };
 
   useEffect(() => {
     const keyDownHandler = (e: KeyboardEvent) => {
@@ -260,6 +138,109 @@ function App() {
       window.removeEventListener("keydown", keyDownHandler);
     };
   }, [nextPreset, prevPreset]);
+
+  const sendTextMessage = (textLayer: TextLayer, textValue: string) => {
+    const { text: textAddress, visible: visibleAddress } =
+      getLayerAddresses(textLayer);
+
+    const address = textAddress;
+    const oscMessage: OscMessage = {
+      address,
+      args: [{ value: textValue, type: "s" }],
+    };
+    sendMessage(JSON.stringify({ data: oscMessage, cmd: "osc" }));
+    if (textValue.length < 1) {
+      sendMessage(
+        JSON.stringify({
+          cmd: "osc",
+          data: {
+            address: visibleAddress,
+            args: [{ value: "false", type: "s" }],
+          },
+        })
+      );
+    } else {
+      sendMessage(
+        JSON.stringify({
+          cmd: "osc",
+          data: {
+            address: visibleAddress,
+            args: [{ value: "true", type: "s" }],
+          },
+        })
+      );
+    }
+  };
+
+  const sendBlendMode = (textLayer: TextLayer, blend: "Over" | "Add") => {
+    const { blendMode: blendModeAddress } = getLayerAddresses(textLayer);
+    sendMessage(
+      JSON.stringify({
+        cmd: "osc",
+        data: {
+          address: blendModeAddress,
+          args: [{ value: blend, type: "s" }],
+        },
+      })
+    );
+  };
+
+  const sendFlash = (textLayer: TextLayer, flash: boolean) => {
+    const { oscillator: oscillatorAddress, opacity: opacityAddress } =
+      getLayerAddresses(textLayer);
+    sendMessage(
+      JSON.stringify({
+        cmd: "osc",
+        data: {
+          address: oscillatorAddress,
+          args: [{ value: flash ? "true" : "false", type: "s" }],
+        },
+      })
+    );
+    // Set opacity to max
+    sendMessage(
+      JSON.stringify({
+        cmd: "osc",
+        data: {
+          address: opacityAddress,
+          args: [{ value: 100, type: "i" }],
+        },
+      })
+    );
+  };
+
+  const sendFont = (textLayer: TextLayer, font: Preset["font"]) => {
+    const { font: fontAddress } = getLayerAddresses(textLayer);
+    if (!font) return;
+    const fontMap = {
+      texting: "Arial",
+      hal: "Arcade",
+      corporate: "Times New Roman",
+    };
+    sendMessage(
+      JSON.stringify({
+        cmd: "osc",
+        data: {
+          address: fontAddress,
+          args: [{ value: fontMap[font], type: "s" }],
+        },
+      })
+    );
+  };
+
+  const sendFontSize = (textLayer: TextLayer, fontSize?: number) => {
+    const { fontSize: fontSizeAddress } = getLayerAddresses(textLayer);
+    if (!fontSize) return;
+    sendMessage(
+      JSON.stringify({
+        cmd: "osc",
+        data: {
+          address: fontSizeAddress,
+          args: [{ value: fontSize, type: "i" }],
+        },
+      })
+    );
+  };
 
   const handleSelectScreen = (screenName: string, checked: boolean) => {
     const screensWithoutThisScreen = selectedScreens.filter(
@@ -285,6 +266,35 @@ function App() {
         data: [...presetsBuffer, newPreset],
       })
     );
+  };
+
+  const handlePlayPreset = (preset: Preset) => {
+    const otherScreens = screens.filter(
+      (otherScreenName) => !preset.screens.includes(otherScreenName)
+    );
+    for (const screenName of preset.screens) {
+      const textLayer = layers[screenName][preset.layer];
+      sendTextMessage(textLayer, preset.text);
+      sendBlendMode(textLayer, preset.transparentBg ? "Add" : "Over");
+      sendFlash(textLayer, !!preset.flash);
+      sendFont(textLayer, preset.font);
+      sendFontSize(textLayer, preset.fontSize);
+    }
+    if (preset.chokeLayer) {
+      for (const otherScreen of otherScreens) {
+        const textLayer = layers[otherScreen][preset.layer];
+        const { visible: visibleAddress } = getLayerAddresses(textLayer);
+        sendMessage(
+          JSON.stringify({
+            cmd: "osc",
+            data: {
+              address: visibleAddress,
+              args: [{ value: "false", type: "s" }],
+            },
+          })
+        );
+      }
+    }
   };
 
   const handleDeletePreset = (preset: Preset) => {
@@ -320,7 +330,7 @@ function App() {
     );
   };
 
-  const handleClearAll = useCallback(() => {
+  const handleClearAll = () => {
     for (const screenName of screens) {
       for (const layerName of settings.layers) {
         const textLayer = layers[screenName][layerName];
@@ -336,45 +346,7 @@ function App() {
         );
       }
     }
-  }, [sendMessage]);
-
-  const handleWsAction = useCallback(
-    (action: string) => {
-      switch (action) {
-        case "firstPreset": {
-          if (presetsBuffer.length > 0) {
-            setSelectedPreset(presetsBuffer[0]);
-          }
-          break;
-        }
-        case "nextPreset": {
-          nextPreset();
-          break;
-        }
-        case "prevPreset": {
-          prevPreset();
-          break;
-        }
-        case "clearAll": {
-          handleClearAll();
-          break;
-        }
-      }
-    },
-    [handleClearAll, nextPreset, presetsBuffer, prevPreset]
-  );
-
-  useEffect(() => {
-    if (!lastMessage) return;
-    const data = JSON.parse(lastMessage.data);
-    if (data.presets) {
-      const savedPresets = JSON.parse(data.presets);
-      setPresetsBuffer(savedPresets);
-    }
-    if (data.action) {
-      handleWsAction(data.action);
-    }
-  }, [handleWsAction, lastMessage]);
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
