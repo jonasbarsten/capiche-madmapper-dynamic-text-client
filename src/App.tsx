@@ -98,7 +98,7 @@ function App() {
     if (!selectedPreset) return;
     handlePlayPreset(selectedPreset);
     const presetElem = document.getElementById(`preset-${selectedPreset.id}`);
-    presetElem?.scrollIntoView({ behavior: "smooth", block: "center" });
+    presetElem?.scrollIntoView({ behavior: "instant", block: "center" });
   }, [selectedPreset]);
 
   useEffect(() => {
