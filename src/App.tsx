@@ -76,6 +76,7 @@ function App() {
       case "firstPreset": {
         if (presetsBuffer.length > 0) {
           setSelectedPreset(presetsBuffer[0]);
+          handlePlayPreset(presetsBuffer[0]);
         }
         break;
       }
@@ -96,7 +97,7 @@ function App() {
 
   useEffect(() => {
     if (!selectedPreset) return;
-    handlePlayPreset(selectedPreset);
+    // handlePlayPreset(selectedPreset);
     const presetElem = document.getElementById(`preset-${selectedPreset.id}`);
     presetElem?.scrollIntoView({ behavior: "instant", block: "center" });
   }, [selectedPreset]);
@@ -122,10 +123,12 @@ function App() {
 
   const nextPreset = () => {
     setSelectedPreset(presetsBuffer[selectedPresetIndex + 1]);
+    handlePlayPreset(presetsBuffer[selectedPresetIndex + 1]);
   };
 
   const prevPreset = () => {
     setSelectedPreset(presetsBuffer[selectedPresetIndex - 1]);
+    handlePlayPreset(presetsBuffer[selectedPresetIndex - 1]);
   };
 
   useEffect(() => {
