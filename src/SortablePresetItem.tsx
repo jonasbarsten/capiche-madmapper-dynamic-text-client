@@ -8,12 +8,14 @@ import { useEffect, useState } from "react";
 import { settings } from "./settings";
 
 export const SortablePresetItem = ({
+  index,
   preset,
   selectedPreset,
   handleSelectPreset,
   handleUpdatePreset,
   handleDeletePreset,
 }: {
+  index: number;
   preset: Preset;
   selectedPreset?: Preset;
   handleSelectPreset: (preset: Preset) => void;
@@ -65,12 +67,14 @@ export const SortablePresetItem = ({
 
   return (
     <tr
+      id={`preset-${preset.id}`}
       ref={setNodeRef}
       style={style}
       {...attributes}
       className={preset.id === selectedPreset?.id ? "bg-base-200" : ""}
     >
       {/* <div className="flex space-x-1 items-center"> */}
+      <td>{index + 1}</td>
       <td className="flex space-x-1 items-center">
         <MdDragIndicator {...listeners} />
         <button

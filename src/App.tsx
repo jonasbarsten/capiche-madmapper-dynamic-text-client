@@ -97,6 +97,8 @@ function App() {
   useEffect(() => {
     if (!selectedPreset) return;
     handlePlayPreset(selectedPreset);
+    const presetElem = document.getElementById(`preset-${selectedPreset.id}`);
+    presetElem?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [selectedPreset]);
 
   useEffect(() => {
@@ -394,6 +396,7 @@ function App() {
             <table className="table">
               <thead>
                 <tr>
+                  <th>#</th>
                   <th></th>
                   <th>Text</th>
                   <th>Screens</th>
@@ -404,9 +407,10 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {presetsBuffer.map((preset) => (
+                {presetsBuffer.map((preset, i) => (
                   <SortablePresetItem
                     key={preset.id}
+                    index={i}
                     preset={preset}
                     selectedPreset={selectedPreset}
                     handleUpdatePreset={handleUpdatePreset}
