@@ -71,7 +71,11 @@ export const SortablePresetItem = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={preset.id === selectedPreset?.id ? "bg-base-200" : ""}
+      className={
+        preset.id === selectedPreset?.id
+          ? "bg-base-200 border-4 border-green-500"
+          : ""
+      }
     >
       {/* <div className="flex space-x-1 items-center"> */}
       <td>{index + 1}</td>
