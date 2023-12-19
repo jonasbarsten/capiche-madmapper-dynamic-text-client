@@ -32,6 +32,7 @@ export type Preset = {
   flash?: boolean;
   font?: "texting" | "hal" | "corporate";
   fontSize?: number;
+  color?: string;
   layer: `layer${number}`;
   chokeLayer?: boolean; // Will hide all other visuals on same layer when played
 };
@@ -228,6 +229,20 @@ function App() {
     );
   };
 
+  const sendColor = (textLayer: TextLayer, color: Preset["color"]) => {
+    const { color: colorAddress } = getLayerAddresses(textLayer);
+    if (!color) return;
+    sendMessage(
+      JSON.stringify({
+        cmd: "osc",
+        data: {
+          address: colorAddress,
+          args: [{ value: color, type: "s" }],
+        },
+      })
+    );
+  };
+
   const sendFontSize = (textLayer: TextLayer, fontSize?: number) => {
     const { fontSize: fontSizeAddress } = getLayerAddresses(textLayer);
     if (!fontSize) return;
@@ -278,6 +293,7 @@ function App() {
       sendBlendMode(textLayer, preset.transparentBg ? "Add" : "Over");
       sendFlash(textLayer, !!preset.flash);
       sendFont(textLayer, preset.font);
+      sendColor(textLayer, preset.color);
       sendFontSize(textLayer, preset.fontSize);
     }
     if (preset.chokeLayer) {
@@ -404,6 +420,7 @@ function App() {
                   <th>Function</th>
                   <th>Font</th>
                   <th>Size</th>
+                  <th>Color</th>
                 </tr>
               </thead>
               <tbody>

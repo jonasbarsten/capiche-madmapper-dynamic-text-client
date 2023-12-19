@@ -16,6 +16,7 @@ export type AddressStrings = {
   visible: `/surfaces/${string}/${string}/visible`;
   blendMode: `/surfaces/${string}/${string}/blend_mode`;
   opacity: `/surfaces/${string}/${string}/opacity`;
+  color: `/surfaces/${string}/${string}/color/rgba`;
   // MEDIA
   text: `/medias/${string}/Font/Text`;
   font: `/medias/${string}/Font/Font`;
@@ -29,6 +30,7 @@ const addressStringsMap: AddressStrings = {
   visible: "/surfaces/{{GROUP_NAME}}/{{QUAD_NAME}}/visible",
   blendMode: "/surfaces/{{GROUP_NAME}}/{{QUAD_NAME}}/blend_mode",
   opacity: "/surfaces/{{GROUP_NAME}}/{{QUAD_NAME}}/opacity",
+  color: "/surfaces/{{GROUP_NAME}}/{{QUAD_NAME}}/color/rgba",
   // MEDIA
   text: "/medias/{{MEDIA_NAME}}/Font/Text",
   font: "/medias/{{MEDIA_NAME}}/Font/Font",
@@ -167,7 +169,14 @@ export const layers = {
 export const settings = {
   screens: ["screen1", "screen2", "screen3", "screen4", "screen5"],
   layers: ["layer1", "layer2", "layer3"],
+  colors: {
+    white: "1. 1. 1. 1.",
+    green: "0. 1. 0. 1.",
+    blue: "0. 0. 1. 1.",
+    black: "0. 0. 0, 1,",
+  },
 } as {
   screens: string[];
   layers: string[];
+  colors: { [key: string]: string };
 };

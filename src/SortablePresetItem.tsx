@@ -205,6 +205,24 @@ export const SortablePresetItem = ({
           }
         />
       </td>
+      <td>
+        <select
+          className="select select-bordered select-xs w-full max-w-xs"
+          onChange={(e) =>
+            handleUpdatePreset({
+              ...preset,
+              color: e.target.value as Preset["color"],
+            })
+          }
+          defaultValue={preset.color}
+        >
+          <option disabled>None</option>
+          <option value={settings.colors.white}>White</option>
+          <option value={settings.colors.green}>Green</option>
+          <option value={settings.colors.blue}>Blue</option>
+          <option value={settings.colors.black}>Black</option>
+        </select>
+      </td>
     </tr>
   );
 };
