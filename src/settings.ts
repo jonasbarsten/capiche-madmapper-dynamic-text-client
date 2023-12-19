@@ -175,8 +175,14 @@ export const settings = {
     blue: "0. 0. 1. 1.",
     black: "0. 0. 0, 1,",
   },
+  typewriterIntervals: {
+    slow: 500,
+    medium: 250,
+    fast: 100,
+  },
 } as {
   screens: string[];
   layers: string[];
   colors: { [key: string]: string };
+  typewriterIntervals: { [key: string]: number };
 };

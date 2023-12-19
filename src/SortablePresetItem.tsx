@@ -101,12 +101,6 @@ export const SortablePresetItem = ({
         >
           <RiPlayListAddLine />
         </button>
-        {/* <button
-          // className="btn btn-xs"
-          onClick={() => handleSelectPreset(preset)}
-        >
-          <CiPlay1 />
-        </button> */}
       </td>
       <td>
         <textarea
@@ -188,7 +182,7 @@ export const SortablePresetItem = ({
           />
         </span>
       </td>
-      <td>
+      <td className="flex flex-col space-y-1">
         <select
           className="select select-bordered select-xs w-full max-w-xs"
           onChange={(e) =>
@@ -203,12 +197,10 @@ export const SortablePresetItem = ({
           <option value="hal">HAL</option>
           <option value="corporate">Corporate</option>
         </select>
-      </td>
-      <td>
         <input
           type="number"
           value={preset.fontSize || 64}
-          className="input w-full max-w-xs input-xs"
+          className="input w-full max-w-xs input-xs text-right"
           min={1}
           max={300}
           onChange={(e) =>
@@ -218,8 +210,6 @@ export const SortablePresetItem = ({
             })
           }
         />
-      </td>
-      <td>
         <select
           className="select select-bordered select-xs w-full max-w-xs"
           onChange={(e) =>
@@ -235,6 +225,46 @@ export const SortablePresetItem = ({
           <option value={settings.colors.green}>Green</option>
           <option value={settings.colors.blue}>Blue</option>
           <option value={settings.colors.black}>Black</option>
+        </select>
+      </td>
+      <td className="space-y-1">
+        <span className="flex justify-end">
+          Enabled
+          <input
+            type="checkbox"
+            checked={!!preset.typeWriter?.enabled}
+            className="checkbox checkbox-xs ml-1"
+            onChange={(e) =>
+              handleUpdatePreset({
+                ...preset,
+                typeWriter: {
+                  enabled: e.target.checked,
+                  intervalMs:
+                    preset.typeWriter?.intervalMs ||
+                    settings.typewriterIntervals.medium,
+                },
+              })
+            }
+          />
+        </span>
+        <select
+          className="select select-bordered select-xs w-full max-w-xs"
+          defaultValue={
+            preset.typeWriter?.intervalMs || settings.typewriterIntervals.medium
+          }
+          onChange={(e) =>
+            handleUpdatePreset({
+              ...preset,
+              typeWriter: {
+                enabled: preset.typeWriter?.enabled || false,
+                intervalMs: parseInt(e.target.value),
+              },
+            })
+          }
+        >
+          <option value={settings.typewriterIntervals.slow}>Slow</option>
+          <option value={settings.typewriterIntervals.medium}>Medium</option>
+          <option value={settings.typewriterIntervals.fast}>Fast</option>
         </select>
       </td>
     </tr>

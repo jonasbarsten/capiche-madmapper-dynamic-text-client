@@ -35,6 +35,10 @@ export type Preset = {
   color?: string;
   layer: `layer${number}`;
   chokeLayer?: boolean; // Will hide all other visuals on same layer when played
+  typeWriter?: {
+    enabled: boolean;
+    intervalMs: number;
+  };
 };
 
 type OscColor = {
@@ -53,6 +57,9 @@ type OscMessage = {
   address: string;
   args: OscArg[];
 };
+
+const timeout = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 function App() {
   const { sendMessage, lastMessage } = useWebSocket("ws://localhost:8085");
@@ -283,13 +290,32 @@ function App() {
     );
   };
 
+  const sendTextAsTypeWriter = async (
+    textLayer: TextLayer,
+    preset: Preset
+    // intervalMs: number
+  ) => {
+    if (!preset.text) return;
+    const textArr = preset.text.split("");
+    if (!textArr) return;
+    let textBuffer = textArr.shift();
+    if (!textBuffer) return;
+    while (textBuffer.length <= preset.text.length) {
+      sendTextMessage(textLayer, textBuffer);
+      textBuffer += textArr.shift();
+      await timeout(
+        preset.typeWriter?.intervalMs || settings.typewriterIntervals.medium
+      );
+    }
+  };
+
   const handlePlayPreset = (preset: Preset) => {
     const otherScreens = screens.filter(
       (otherScreenName) => !preset.screens.includes(otherScreenName)
     );
     for (const screenName of preset.screens) {
       const textLayer = layers[screenName][preset.layer];
-      sendTextMessage(textLayer, preset.text);
+      // sendTextMessage(textLayer, preset.text);
       sendBlendMode(textLayer, preset.transparentBg ? "Add" : "Over");
       sendFlash(textLayer, !!preset.flash);
       sendFont(textLayer, preset.font);
@@ -309,6 +335,19 @@ function App() {
             },
           })
         );
+      }
+    }
+    if (preset.typeWriter?.enabled) {
+      const promises = [];
+      for (const screenName of preset.screens) {
+        const textLayer = layers[screenName][preset.layer];
+        promises.push(sendTextAsTypeWriter(textLayer, preset));
+      }
+      Promise.all(promises).then(() => {});
+    } else {
+      for (const screenName of preset.screens) {
+        const textLayer = layers[screenName][preset.layer];
+        sendTextMessage(textLayer, preset.text);
       }
     }
   };
@@ -437,8 +476,7 @@ function App() {
                   <th>Layers</th>
                   <th>Function</th>
                   <th>Font</th>
-                  <th>Size</th>
-                  <th>Color</th>
+                  <th>Typewriter</th>
                 </tr>
               </thead>
               <tbody>
