@@ -295,11 +295,11 @@ function App() {
     preset: Preset
     // intervalMs: number
   ) => {
-    if (!preset.text) return;
+    // if (!preset.text) return;
     const textArr = preset.text.split("");
-    if (!textArr) return;
-    let textBuffer = textArr.shift();
-    if (!textBuffer) return;
+    // if (!textArr) return;
+    let textBuffer = textArr.shift() || "";
+    // if (!textBuffer) return;
     while (textBuffer.length <= preset.text.length) {
       sendTextMessage(textLayer, textBuffer);
       textBuffer += textArr.shift();
