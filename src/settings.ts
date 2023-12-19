@@ -176,9 +176,9 @@ export const settings = {
     black: "0. 0. 0, 1,",
   },
   typewriterIntervals: {
-    slow: 500,
-    medium: 250,
-    fast: 100,
+    slow: 250,
+    medium: 100,
+    fast: 50,
   },
 } as {
   screens: string[];
