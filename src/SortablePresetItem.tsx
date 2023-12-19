@@ -1,7 +1,8 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Preset } from "./App";
-import { CiPlay1, CiTrash } from "react-icons/ci";
+import { CiTrash } from "react-icons/ci";
+import { RiPlayListAddLine } from "react-icons/ri";
 import { MdDragIndicator } from "react-icons/md";
 import { useDebounce } from "usehooks-ts";
 import { useEffect, useState } from "react";
@@ -14,6 +15,7 @@ export const SortablePresetItem = ({
   handleSelectPreset,
   handleUpdatePreset,
   handleDeletePreset,
+  handleAddEmptyBelow,
 }: {
   index: number;
   preset: Preset;
@@ -21,6 +23,7 @@ export const SortablePresetItem = ({
   handleSelectPreset: (preset: Preset) => void;
   handleUpdatePreset: (preset: Preset) => void;
   handleDeletePreset: (preset: Preset) => void;
+  handleAddEmptyBelow: (index: number) => void;
 }) => {
   const [text, setText] = useState<string>(preset.text);
   const debouncedValue = useDebounce<string>(text, 500);
@@ -78,21 +81,32 @@ export const SortablePresetItem = ({
       }
     >
       {/* <div className="flex space-x-1 items-center"> */}
-      <td>{index + 1}</td>
-      <td className="flex space-x-1 items-center">
+      <td
+        className="hover:cursor-pointer hover:bg-gray-700"
+        onClick={() => handleSelectPreset(preset)}
+      >
+        {index + 1}
+      </td>
+      <td className="flex flex-col space-y-1 items-center">
         <MdDragIndicator {...listeners} />
         <button
-          className="btn btn-xs"
+          className="btn btn-sm"
           onClick={() => handleDeletePreset(preset)}
         >
           <CiTrash />
         </button>
         <button
-          className="btn btn-xs"
+          className="btn btn-sm"
+          onClick={() => handleAddEmptyBelow(index)}
+        >
+          <RiPlayListAddLine />
+        </button>
+        {/* <button
+          // className="btn btn-xs"
           onClick={() => handleSelectPreset(preset)}
         >
           <CiPlay1 />
-        </button>
+        </button> */}
       </td>
       <td>
         <textarea

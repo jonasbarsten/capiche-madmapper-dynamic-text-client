@@ -329,6 +329,24 @@ function App() {
     handleClearAll();
   };
 
+  const handleAddEmptyBelow = (index: number) => {
+    const newPreset: Preset = {
+      id: uuidv4(),
+      text: "",
+      screens: selectedScreens,
+      layer: "layer1",
+    };
+    const presetsBufferCopy = [...presetsBuffer];
+    presetsBufferCopy.splice(index + 1, 0, newPreset);
+    setPresetsBuffer(presetsBufferCopy);
+    sendMessage(
+      JSON.stringify({
+        cmd: "writePreset",
+        data: presetsBufferCopy,
+      })
+    );
+  };
+
   const handleUpdatePreset = (newPreset: Preset) => {
     const allUpdatedPresets = presetsBuffer.map((bufferPreset) => {
       if (bufferPreset.id === newPreset.id) {
@@ -433,6 +451,7 @@ function App() {
                     handleUpdatePreset={handleUpdatePreset}
                     handleSelectPreset={(preset) => setSelectedPreset(preset)}
                     handleDeletePreset={handleDeletePreset}
+                    handleAddEmptyBelow={handleAddEmptyBelow}
                   ></SortablePresetItem>
                 ))}
               </tbody>
